@@ -1,6 +1,6 @@
 #include "cons.h"
 #include "controls/keys.c"
-
+#include "controls/display.c"
 
 
 int main() {
@@ -13,14 +13,8 @@ int main() {
     log_info("Raylib Version: %s", RAYLIB_VERSION);
     
 
-    // -- Camera
-    Camera3D* camera = init_camera();
-
-    
-
     // -- Inits
-
-
+    Camera3D* camera = init_camera();
 
 
     // -- Main game loop
@@ -39,10 +33,8 @@ int main() {
         BeginDrawing();
             ClearBackground((Color){ 50, 50, 50, 255 });
 
-            // -- Fps count
-            char fps[4];
-            sprintf(fps, "%i", GetFPS());
-            DrawText(fps, 10, 20, 16, RAYWHITE);
+            // -- Display
+            handle_display(camera);
 
             // -- Draw
             BeginMode3D(*camera);
@@ -50,10 +42,7 @@ int main() {
     
             EndMode3D();
 
-        
-            char camPosition[64];
-            sprintf(camPosition, "Camera: (%.2f, %.2f, %.2f)", camera->position.x, camera->position.y, camera->position.z);
-            DrawText(camPosition, 10, 10, 10, RAYWHITE);
+
         EndDrawing();
     }
 

@@ -16,3 +16,9 @@
 
 // -- Controls
 #define MOVEMENT_SPEED 0.1
+#define DEBUG 1
+
+// -- Physics
+#define GRAVITY ((Vector3) {0.0, 0.0f, -9.81})
+#define ITERATIONS 8 // Verlet interations
+#define RADIUS 10
