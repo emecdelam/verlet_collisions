@@ -30,6 +30,7 @@ void verlet_point(Point* point, float dt);
 void verlet_link(PhysicData* cloth, Link* link);
 void apply_acceleration(Point* point, Vector3 acc);
 void apply_constraint(Point* point);
+void apply_collisions(PhysicData* data);
 void update_physic(PhysicData* data, float dt, Vector3 acc);
 int find_point(PhysicData* data, Vector3 pos, float epsilon);
 int add_point(PhysicData* data, Vector3 pos);

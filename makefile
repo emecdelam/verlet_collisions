@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -Wall -Wextra -g -std=c11 -Iinclude
+CFLAGS = -Wall -Wextra -g -std=c11 -Iinclude -Ofast
 LIBS = -lraylib -lm -ldl -lpthread -lrt -lX11
 
 # -- Structure --

@@ -17,6 +17,7 @@ void update_physic(PhysicData* data, float dt, Vector3 acc) {
         apply_constraint(point);
         verlet_point(point, dt);
     }
+    apply_collisions(data);
     for (int iter = 0; iter < ITERATIONS; iter++) {
         for (int i = 0; i < data->n_link; i++) {
             if (!data->links[i].skip){
@@ -34,10 +35,47 @@ void update_physic(PhysicData* data, float dt, Vector3 acc) {
  * @param Vector3 the acceleration
  */
 void apply_acceleration(Point* point, Vector3 acc){
-    log_debug("acceleration is %f, %f, %f", acc.x, acc.y, acc.z);
     point->acceleration = acc;
 }
 
+
+/**
+ * Apply constraint to the point
+ * @param Point* the point
+ */
+void apply_constraint(Point* point) {
+    Vector3 velocity = Vector3Subtract(point->position, point->old_position);
+
+    if (point->position.y - point->radius < 0.0f) {
+        point->position.y = point->radius;
+        // Invert the velocity in Y
+        velocity.y = -velocity.y * BOUNCE;
+        // Recompute old_position so it reflects the new velocity
+        point->old_position = Vector3Subtract(point->position, velocity);
+    }
+
+    if (point->position.x > (BORDER - point->radius)) {
+        point->position.x = BORDER - point->radius;
+        velocity.x = -velocity.x * BOUNCE;
+        point->old_position = Vector3Subtract(point->position, velocity);
+    } 
+    else if (point->position.x < (-BORDER + point->radius)) {
+        point->position.x = -BORDER + point->radius;
+        velocity.x = -velocity.x * BOUNCE;
+        point->old_position = Vector3Subtract(point->position, velocity);
+    }
+
+    if (point->position.z > (BORDER - point->radius)) {
+        point->position.z = BORDER - point->radius;
+        velocity.z = -velocity.z * BOUNCE;
+        point->old_position = Vector3Subtract(point->position, velocity);
+    } 
+    else if (point->position.z < (-BORDER + point->radius)) {
+        point->position.z = -BORDER + point->radius;
+        velocity.z = -velocity.z * BOUNCE;
+        point->old_position = Vector3Subtract(point->position, velocity);
+    }
+}
 
 
 /**
@@ -46,40 +84,37 @@ void apply_acceleration(Point* point, Vector3 acc){
  * @param float the time interval
  */
 void verlet_point(Point* point, float dt) {
-    log_debug("Point pos and old_pos %f,%f,%f, %f, %f, %f",point->position.x, point->position.y, point->position.z,point->old_position.x, point->old_position.y, point->old_position.z);
     Vector3 velocity = Vector3Subtract(point->position, point->old_position);
-    log_debug("Point moving at %f,%f,%f",velocity.x, velocity.y, velocity.z);
     point->old_position = point->position;
     point->position = Vector3Add(Vector3Add(point->position, velocity), Vector3Scale(point->acceleration, dt * dt));
-    log_debug("Drawing point at %f, %f, %f", point->position.x, point->position.y, point->position.z);
-    DrawSphere(point->position, point->radius, RAYWHITE);
 }
-
-
 
 /**
- * Apply constraint to the point
+ * Applies collisions to each point
+ * @param PhysicData* the simulation
  */
-void apply_constraint(Point* point){
-    if (point->position.y < 0){
-        point->position.y = 0.0;
+void apply_collisions(PhysicData* data){
+    for (int i = 0; i < data->n_point; i++) {
+        for (int j = 0; j < data->n_point; j++) {
+            if (i == j) { 
+                continue; 
+            }
+            Point *p1 = &data->points[i];
+            Point *p2 = &data->points[j];
+
+            Vector3 axis = Vector3Subtract(p1->position, p2->position);
+            float dist = Vector3Length(axis);
+            float combinedRadius = p1->radius + p2->radius;
+
+            if (dist < combinedRadius) {
+                float delta = combinedRadius - dist;
+                Vector3 normal = Vector3Scale(axis, 1.0f/dist);
+                p1->position = Vector3Add(p1->position, Vector3Scale(normal,  0.5f * delta));
+                p2->position = Vector3Subtract(p2->position, Vector3Scale(normal, 0.5f * delta));
+            }
+        }
     }
-    if (point->position.x > 2.0){
-        point->position.x = 2.0;
-    }
-    if (point->position.x < -2.0){
-        point->position.x = -2.0;
-    }
-    if (point->position.z > 2.0){
-        point->position.z = 2.0;
-    }
-    if (point->position.z < -2.0){
-        point->position.z = -2.0;
-    }
-    return;
 }
-
-
 
 /**
  * Apply verlet link
@@ -110,7 +145,6 @@ void verlet_link(PhysicData* data, Link* link) {
         x1->position = Vector3Add(x1->position, Vector3Scale(n, delta * 0.5f));
         x2->position = Vector3Subtract(x2->position, Vector3Scale(n, delta * 0.5f));
     }
-    DrawLine3D(x1->position, x2->position, RAYWHITE);
 }
 
 
@@ -142,7 +176,6 @@ int find_point(PhysicData* data, Vector3 pos, float epsilon) {
  * @param Vector3 the position of the point
  */
 int add_point(PhysicData* data, Vector3 pos) {
-    log_warn("Adding point at %f,%f,%f", pos.x, pos.y, pos.z);
     int idx = find_point(data, pos, 0.001f);
     if (idx >= 0) {
         return idx;
@@ -158,8 +191,6 @@ int add_point(PhysicData* data, Vector3 pos) {
         .constrained = false,
         .skip = false
     };
-    log_warn("Point added at %f,%f,%f", p.position.x, p.position.y, p.position.z);
-    log_warn("Point added at %f,%f,%f", p.old_position.x, p.old_position.y, p.old_position.z);
     data->points[data->n_point] = p;
     return data->n_point++;
 }
