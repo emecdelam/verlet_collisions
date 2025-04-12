@@ -20,6 +20,8 @@ make run
 
 If you have raylib installed, it should work
 
+Also this is made with an advanced camera movement system to allow the player to move aroud, simply use arrows and left click as well as page_up and down for height
+
 ## Verlet
 
 The solution is found using verlet collisions in O(n^2), there are some room left for improvement.
