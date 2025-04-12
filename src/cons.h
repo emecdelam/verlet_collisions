@@ -19,6 +19,6 @@
 #define DEBUG 1
 
 // -- Physics
-#define GRAVITY ((Vector3) {0.0, 0.0f, -9.81})
+#define GRAVITY ((Vector3) {0.0, -9.81, 0.0})
 #define ITERATIONS 8 // Verlet interations
-#define RADIUS 10
+#define RADIUS 0.1

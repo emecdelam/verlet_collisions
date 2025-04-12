@@ -28,8 +28,9 @@ typedef struct PhysicData {
 
 void verlet_point(Point* point, float dt);
 void verlet_link(PhysicData* cloth, Link* link);
-void apply_acceleration(PhysicData* cloth, Vector3 acc);
-void update_physic(PhysicData* data, float dt, Vector3 wind);
+void apply_acceleration(Point* point, Vector3 acc);
+void apply_constraint(Point* point);
+void update_physic(PhysicData* data, float dt, Vector3 acc);
 int find_point(PhysicData* data, Vector3 pos, float epsilon);
 int add_point(PhysicData* data, Vector3 pos);
 void add_link(PhysicData* data, Vector3 x1, Vector3 x2);
